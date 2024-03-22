@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import Image from 'next/image';
-import { Row, Typography } from 'antd';
+import { Col, Row, Typography } from 'antd';
 
 import { WeatherData } from '@app/types';
 import { capitalizeFirstLetter, roundTemperature } from '@app/_utils/text';
@@ -22,8 +23,17 @@ const WeatherInformationCard = ({
   onAddFav,
   onRemoveFav,
 }: WeatherInformationCardProps) => {
+  const minTemp = useMemo(
+    () => roundTemperature(currentWeather.main.temp_min),
+    [currentWeather.main.temp_min]
+  );
+  const maxTemp = useMemo(
+    () => roundTemperature(currentWeather.main.temp_max),
+    [currentWeather.main.temp_max]
+  );
+
   return (
-    <Row
+    <Col
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -86,13 +96,14 @@ const WeatherInformationCard = ({
             marginBottom: '-20px',
           }}
         />
+        <br />
         {capitalizeFirstLetter(currentWeather.weather[0].description)}
       </Text>
 
       <Text style={{ fontSize: '1.4em', color: '#ffffff', lineHeight: '1em' }}>
-        {`Mínima: ${roundTemperature(currentWeather.main.temp_min)} /  Máxima: ${roundTemperature(currentWeather.main.temp_max)}`}
+        {`Min: ${minTemp} /  Max: ${maxTemp}`}
       </Text>
-    </Row>
+    </Col>
   );
 };
 

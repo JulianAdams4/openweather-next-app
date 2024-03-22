@@ -15,6 +15,10 @@ export const API_FORECAST_BASE_URL =
 
 export const LIMIT_FORECAST_ITEMS_3H = 8; // 8 * 3h = 24h
 
+export const MIN_LENGTH_FOR_SEARCHING = 3;
+
+export const MAX_LENGTH_CITY_NAME_INPUT = 30;
+
 export const MONTHS: string[] = [
   'Ene',
   'Feb',

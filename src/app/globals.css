@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   --foreground-rgb: 0, 0, 0;
   --ff-nunito-sans: 'Nunito Sans', sans-serif;
@@ -15,10 +11,11 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  scroll-behavior: smooth;
-  overflow: overlay;
   font-family: var(--ff-nunito-sans) !important;
+  color: rgb(var(--foreground-rgb));
+  overflow: overlay;
+  scroll-behavior: smooth;
+  margin: 0;
 }
 
 * {

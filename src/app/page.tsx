@@ -21,31 +21,34 @@ import {
   NotificationType,
   WeatherData,
 } from '@app/types';
-
-import SiderPage from './_components/Sider';
-import SplashScreen from './_components/SplashScreen';
-import Header from './_components/Header';
-import ResponsiveDrawer from './_components/ResponsiveDrawer';
 import {
-  FAV_LOCATIONS_STORAGE_KEY,
-  MY_LOCATION,
-  SIDER_BG_COLORS,
-  WEATHER_MAIN,
-} from './_utils/constants';
-import MainContent from './_components/Main';
+  getBakgroundColorAndImageByWeather,
+  isDayOrNight,
+} from '@app/_utils/weather';
 import {
   buildForecastApiUrl,
   buildWeatherApiUrl,
   capitalizeFirstLetter,
   isInFavLocations,
   sortByName,
-} from './_utils/text';
-import { parseTimestamp } from './_utils/time';
+} from '@app/_utils/text';
+import {
+  FAV_LOCATIONS_STORAGE_KEY,
+  MIN_LENGTH_FOR_SEARCHING,
+  MY_LOCATION,
+} from '@app/_utils/constants';
+
+import SiderPage from './_components/Sider';
+import SplashScreen from './_components/SplashScreen';
+import Header from './_components/Header';
+import ResponsiveDrawer from './_components/ResponsiveDrawer';
+import MainContent from './_components/Main';
 
 const Context = createContext({ name: 'Notifications' });
 
 export default function Home() {
   const lastLocation = useRef('');
+  const localStorageAPI = new LocalStorageService();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -56,71 +59,33 @@ export default function Home() {
   const [currentForecast, setCurrentForecast] = useState<
     ForecastData | undefined
   >(undefined);
-  const [openDrawer, setOpenDrawer] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState<boolean>(false);
   const [locationsReloadKey, setLocationsReloadKey] = useState<string>('');
 
-  const localStorage = new LocalStorageService();
-
   const notificationsContextValue = useMemo(() => ({ name: 'Ant Design' }), []);
-  const [api, contextHolder] = notification.useNotification();
+  const [notificationsApi, notificationsContextHolder] =
+    notification.useNotification();
+
+  const favLocations = useMemo(
+    () => localStorageAPI.getItem(FAV_LOCATIONS_STORAGE_KEY) || [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [locationsReloadKey]
+  );
 
   const sendNotification = (
     type: NotificationType = 'info',
     message: string = 'Información',
     description: string = 'Algo salió mal'
   ) => {
-    api[type]({
+    notificationsApi[type]({
       message,
       description: (
         <Context.Consumer>{({ name }) => `${description}`}</Context.Consumer>
       ),
       placement: 'topRight',
+      duration: 2500,
     });
   };
-
-  const favLocations = useMemo(
-    () => localStorage.getItem(FAV_LOCATIONS_STORAGE_KEY) || [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [locationsReloadKey]
-  );
-
-  const getNightOrDay = useMemo(() => {
-    if (currentWeather?.dt) {
-      const hour = parseTimestamp(currentWeather?.dt)
-        .split(' ')[1]
-        .replace(':', '');
-      return hour > '1800' || hour < '0600' ? 'NIGHT' : 'DAY';
-    }
-    return 'DAY';
-  }, [currentWeather?.dt]);
-
-  const [getBackgroundUrl, weatherBgColor] = useMemo(() => {
-    if (currentWeather?.weather && getNightOrDay) {
-      const weatherMain = currentWeather?.weather[0].main.toUpperCase();
-      if (WEATHER_MAIN._GROUPS.CLEAR.includes(weatherMain)) {
-        return [DespejadoBg.src, SIDER_BG_COLORS.CLEAR[getNightOrDay]];
-      }
-      if (WEATHER_MAIN._GROUPS.THUNDERSTORM.includes(weatherMain)) {
-        return [TormentaBg.src, SIDER_BG_COLORS.RAIN[getNightOrDay]];
-      }
-      if (WEATHER_MAIN._GROUPS.SNOW.includes(weatherMain)) {
-        return [NieveBg.src, SIDER_BG_COLORS.SNOW[getNightOrDay]];
-      }
-      if (
-        WEATHER_MAIN._GROUPS.CLOUDS.includes(weatherMain) ||
-        WEATHER_MAIN._GROUPS.ATMOSPHERE.includes(weatherMain)
-      ) {
-        return [NubladoBg.src, SIDER_BG_COLORS.CLOUDS[getNightOrDay]];
-      }
-      if (
-        WEATHER_MAIN._GROUPS.DRIZZLE.includes(weatherMain) ||
-        WEATHER_MAIN._GROUPS.RAIN.includes(weatherMain)
-      ) {
-        return [LLuviaBg.src, SIDER_BG_COLORS.RAIN[getNightOrDay]];
-      }
-    }
-    return [DespejadoBg.src, SIDER_BG_COLORS.CLEAR[getNightOrDay]];
-  }, [currentWeather?.weather, getNightOrDay]);
 
   const fetchWeather = async () => {
     if (selectedLocation) {
@@ -161,7 +126,11 @@ export default function Home() {
   };
 
   const onSelectLocation = (favLocation: string) => {
-    setSelectedLocation(favLocation);
+    if (selectedLocation.length >= MIN_LENGTH_FOR_SEARCHING) {
+      setSelectedLocation(favLocation);
+    } else {
+      sendNotification('error', 'Error', 'Debe ingresar al menos 3 caracteres');
+    }
   };
 
   const onAddFavLocation = (
@@ -181,7 +150,7 @@ export default function Home() {
         time: locationData.dt,
       },
     ];
-    localStorage.saveItem(FAV_LOCATIONS_STORAGE_KEY, updatedFavLocations);
+    localStorageAPI.saveItem(FAV_LOCATIONS_STORAGE_KEY, updatedFavLocations);
     setLocationsReloadKey(`${Date.now()}`);
     if (showMessage) {
       sendNotification('success', 'Éxito', 'Se agregó a Favoritos');
@@ -192,13 +161,16 @@ export default function Home() {
     const updatedFavLocations = favLocations.filter(
       (location: FavLocation) => location.name !== cityName
     );
-    localStorage.saveItem(FAV_LOCATIONS_STORAGE_KEY, updatedFavLocations);
+    localStorageAPI.saveItem(FAV_LOCATIONS_STORAGE_KEY, updatedFavLocations);
     sendNotification('success', 'Éxito', 'Se eliminó de Favoritos');
     setLocationsReloadKey(`${Date.now()}`);
   };
 
   useEffect(() => {
-    if (selectedLocation && selectedLocation.length > 3) {
+    if (
+      selectedLocation &&
+      selectedLocation.length >= MIN_LENGTH_FOR_SEARCHING
+    ) {
       setIsSearching(true);
       fetchWeather().then(() => {
         setIsSearching(false);
@@ -216,11 +188,32 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getNightOrDay = useMemo(
+    () => isDayOrNight(currentWeather),
+    [currentWeather]
+  );
+
+  const [getBackgroundUrl, weatherBgColor] = useMemo(
+    () =>
+      getBakgroundColorAndImageByWeather(
+        [
+          DespejadoBg.src,
+          NubladoBg.src,
+          LLuviaBg.src,
+          TormentaBg.src,
+          NieveBg.src,
+        ],
+        getNightOrDay,
+        currentWeather
+      ),
+    [currentWeather, getNightOrDay]
+  );
+
   return (
     <Context.Provider value={notificationsContextValue}>
       {isLoading && <SplashScreen />}
 
-      {contextHolder}
+      {notificationsContextHolder}
 
       <Layout
         style={{
@@ -244,7 +237,7 @@ export default function Home() {
             onCloseDrawer={onCloseDrawer}
             weatherBgColor={weatherBgColor}
             selectedLocation={selectedLocation}
-            onSelectLocation={onSelectLocation} // ***
+            onSelectLocation={onSelectLocation}
             onRemoveFav={onRemoveFavLocation}
           />
 

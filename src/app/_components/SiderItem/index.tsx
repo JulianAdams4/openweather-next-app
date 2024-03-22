@@ -108,7 +108,7 @@ const SiderItem = ({
           {item.weather}
         </Text>
         <Text strong style={{ color: 'rgba(255,255,255,0.56)' }}>
-          Min: {item.temp_min} / Max: {item.temp_max}
+          {`Min: ${roundTemperature(item.temp_min)} / Max: ${roundTemperature(item.temp_max)}`}
         </Text>
       </Row>
     </Col>

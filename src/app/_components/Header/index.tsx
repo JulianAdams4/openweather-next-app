@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button, Col, Input, Row } from 'antd';
 import { MenuOutlined, SearchOutlined } from '@ant-design/icons';
+
+import { MAX_LENGTH_CITY_NAME_INPUT } from '@app/_utils/constants';
 import './styles.css';
 
 type HeaderProps = {
@@ -41,21 +43,21 @@ const Header = ({ loading, onOpenDrawer, setLocation }: HeaderProps) => {
       >
         <Col xs={19} sm={16} md={11} lg={8} xl={5}>
           <Input
+            allowClear
+            size='large'
+            variant='borderless'
+            placeholder='Ingresa una ciudad'
+            onPressEnter={(e) => setLocation(inputValue)}
+            onChange={(e) => setInputValue(e.target.value)}
+            count={{ show: true, max: MAX_LENGTH_CITY_NAME_INPUT }}
+            maxLength={MAX_LENGTH_CITY_NAME_INPUT}
             classNames={{
               input: 'search-input-input',
               count: 'search-input-count',
             }}
-            allowClear
-            variant='borderless'
-            placeholder='Ingresa una ciudad'
             prefix={
               <SearchOutlined style={{ marginRight: 10, opacity: 0.5 }} />
             }
-            onChange={(e) => setInputValue(e.target.value)}
-            onPressEnter={(e) => {
-              setLocation(inputValue);
-            }}
-            count={{ show: true, max: 30 }}
             style={{
               color: '#ffffff',
               backgroundColor: 'rgba(0, 0, 0, 0.2)',
