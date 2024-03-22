@@ -1,4 +1,4 @@
-import { FavLocation } from '@project/next-env';
+import { FavLocation } from '@app/types';
 
 import {
   API_FORECAST_BASE_URL,

@@ -1,19 +1,21 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Col, Row, Typography } from 'antd';
+
 import { MY_LOCATION } from '@app/_utils/constants';
-import { FavLocation } from '@project/next-env';
+import { FavLocation } from '@app/types';
+import { roundTemperature } from '@app/_utils/text';
+import { isMoreThan3Hours, parseTimestamp } from '@app/_utils/time';
 
 import RemoveFavItemButton from '../RemoveFavItemButton';
 import './styles.css';
-import { roundTemperature } from '../../_utils/text';
-import { isMoreThan3Hours, parseTimestamp } from '../../_utils/time';
 
 const { Text, Title } = Typography;
 
 type SiderItemProps = {
   item: FavLocation;
-  isSelected: boolean;
   isLast: boolean;
+  isSelected: boolean;
+  showFavIcon: boolean;
   onSelectFav: (name: string) => void;
   onRemoveFav: (name: string) => void;
 };
@@ -24,6 +26,7 @@ const SiderItem = ({
   onRemoveFav,
   isLast = false,
   isSelected = false,
+  showFavIcon = true,
 }: SiderItemProps) => {
   const mainStyle = {
     padding: '.5em 1.2em',
@@ -58,10 +61,12 @@ const SiderItem = ({
             >
               {item.name}
             </Text>
-            <RemoveFavItemButton
-              cityName={item.name}
-              onRemoveFav={onRemoveFav}
-            />
+            {showFavIcon && (
+              <RemoveFavItemButton
+                cityName={item.name}
+                onRemoveFav={onRemoveFav}
+              />
+            )}
           </Row>
           <Row>
             {item.time && (
@@ -83,7 +88,7 @@ const SiderItem = ({
                   lineHeight: '10px',
                 }}
               >
-                &nbsp;&nbsp;-&nbsp;&nbsp;Mi ubicación
+                &nbsp;&nbsp;-&nbsp;&nbsp;Actual
               </Text>
             )}
           </Row>

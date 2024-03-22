@@ -39,12 +39,49 @@ export const SIDER_BG_COLORS = {
     DAY: '#377CA6',
     NIGHT: '#181C21',
   },
-  NUBLADO: {
+  MUY_NUBOSO: {
     DAY: '#5B6D7D',
     NIGHT: '#272B2D',
   },
-  LLUVIA: {
+  LLUVIAS: {
     DAY: '#5D7C8B',
     NIGHT: '#15161E',
+  },
+};
+
+export const WEATHER_MAIN = {
+  ASH: 'ASH',
+  CLEAR: 'CLEAR',
+  CLOUDS: 'CLOUDS',
+  DRIZZLE: 'DRIZZLE',
+  DUST: 'DUST',
+  FOG: 'FOG',
+  HAZE: 'HAZE',
+  MIST: 'MIST',
+  RAIN: 'RAIN',
+  SAND: 'SAND',
+  SMOKE: 'SMOKE',
+  SNOW: 'SNOW',
+  SQUALL: 'SQUALL',
+  THUNDERSTORM: 'THUNDERSTORM',
+  TORNADO: 'TORNADO',
+  _GROUPS: {
+    ATMOSPHERE: [
+      'MIST',
+      'SMOKE',
+      'DUST',
+      'HAZE',
+      'FOG',
+      'SAND',
+      'ASH',
+      'SQUALL',
+      'TORNADO',
+    ],
+    CLEAR: ['CLEAR'],
+    CLOUDS: ['CLOUDS'],
+    DRIZZLE: ['DRIZZLE'],
+    RAIN: ['RAIN'],
+    SNOW: ['SNOW'],
+    THUNDERSTORM: ['THUNDERSTORM'],
   },
 };

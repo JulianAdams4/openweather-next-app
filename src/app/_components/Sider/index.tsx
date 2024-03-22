@@ -1,6 +1,7 @@
 import { Col, Row, Typography } from 'antd';
-import { StarFilled, WarningFilled } from '@ant-design/icons';
-import { FavLocation } from '@project/next-env';
+import { StarFilled } from '@ant-design/icons';
+
+import { FavLocation } from '@app/types';
 
 import SiderItem from '../SiderItem';
 
@@ -12,6 +13,7 @@ type SiderProps = {
   selectedLocation: string;
   onSelectLocation: (loc: string) => void;
   onRemoveFav: (cityName: string) => void;
+  showFavIcon?: boolean;
 };
 
 const Sider = ({
@@ -20,6 +22,7 @@ const Sider = ({
   selectedLocation,
   onSelectLocation,
   onRemoveFav,
+  showFavIcon = true,
 }: SiderProps) => {
   return (
     <Col
@@ -80,6 +83,7 @@ const Sider = ({
               isSelected={selectedLocation === item.name}
               isLast={idx === locations.length - 1}
               onRemoveFav={onRemoveFav}
+              showFavIcon={showFavIcon}
             />
           </Row>
         ))}

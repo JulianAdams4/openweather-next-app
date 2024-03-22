@@ -1,6 +1,7 @@
 import { Button } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
-import { WeatherData } from '@project/next-env';
+
+import { WeatherData } from '@app/types';
 
 type AddFavItemButtonProps = {
   locationData: WeatherData;

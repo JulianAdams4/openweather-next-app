@@ -1,5 +1,6 @@
 import { Drawer } from 'antd';
-import { FavLocation, ReactMouseEvent } from '@project/next-env';
+
+import { FavLocation, ReactMouseEvent } from '@app/types';
 
 import Sider from '../Sider';
 import './styles.css';
@@ -9,8 +10,8 @@ type ResponsiveDrawerProps = {
   openDrawer: boolean;
   weatherBgColor: string;
   selectedLocation: string;
-  onSelectLocation: (loc: string) => void;
-  onCloseDrawer: (e: ReactMouseEvent) => void;
+  onSelectLocation: (loc: string, flag?: boolean) => void;
+  onCloseDrawer: (e?: ReactMouseEvent) => void;
   onRemoveFav: (name: string) => void;
 };
 
@@ -36,8 +37,12 @@ const ResponsiveDrawer = ({
         locations={locations}
         weatherBgColor={weatherBgColor}
         selectedLocation={selectedLocation}
-        onSelectLocation={onSelectLocation}
+        onSelectLocation={(name: string) => {
+          onSelectLocation(name);
+          onCloseDrawer();
+        }}
         onRemoveFav={onRemoveFav}
+        showFavIcon={false}
       />
     </Drawer>
   );

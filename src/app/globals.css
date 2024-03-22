@@ -15,7 +15,6 @@
 }
 
 body {
-  overflow-x: hidden;
   color: rgb(var(--foreground-rgb));
   scroll-behavior: smooth;
   overflow: overlay;

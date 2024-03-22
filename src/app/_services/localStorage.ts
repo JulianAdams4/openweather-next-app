@@ -1,4 +1,4 @@
-import { LocalStorageAPI } from '@project/next-env';
+import { LocalStorageAPI } from '@app/types';
 
 class LocalStorageService implements LocalStorageAPI {
   saveItem(key: string, value: any): void {

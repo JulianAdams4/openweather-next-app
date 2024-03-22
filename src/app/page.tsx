@@ -8,9 +8,19 @@ import React, {
   useState,
 } from 'react';
 import { Col, Layout, notification, Row } from 'antd';
-import despejadoBg from '@assets/despejado.jpeg';
+
+import DespejadoBg from '@assets/despejado.jpeg';
+import LLuviaBg from '@assets/lluvia.jpg';
+import NieveBg from '@assets/nieve.jpeg';
+import NubladoBg from '@assets/nublado.jpeg';
+import TormentaBg from '@assets/tormenta.jpeg';
 import LocalStorageService from '@app/_services/localStorage';
-import { FavLocation, NotificationType, WeatherData } from '@project/next-env';
+import {
+  FavLocation,
+  ForecastData,
+  NotificationType,
+  WeatherData,
+} from '@app/types';
 
 import SiderPage from './_components/Sider';
 import SplashScreen from './_components/SplashScreen';
@@ -20,6 +30,7 @@ import {
   FAV_LOCATIONS_STORAGE_KEY,
   MY_LOCATION,
   SIDER_BG_COLORS,
+  WEATHER_MAIN,
 } from './_utils/constants';
 import MainContent from './_components/Main';
 import {
@@ -29,6 +40,7 @@ import {
   isInFavLocations,
   sortByName,
 } from './_utils/text';
+import { parseTimestamp } from './_utils/time';
 
 const Context = createContext({ name: 'Notifications' });
 
@@ -41,7 +53,9 @@ export default function Home() {
   const [currentWeather, setCurrentWeather] = useState<WeatherData | undefined>(
     undefined
   );
-  const [currentForecast, setCurrentForecast] = useState(null);
+  const [currentForecast, setCurrentForecast] = useState<
+    ForecastData | undefined
+  >(undefined);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [locationsReloadKey, setLocationsReloadKey] = useState<string>('');
 
@@ -69,9 +83,46 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [locationsReloadKey]
   );
-  useEffect(() => console.log('Se recargan los Favs'), [locationsReloadKey]);
 
-  const weatherBgColor = SIDER_BG_COLORS.DESPEJADO.DAY;
+  const getBackgroundUrl = useMemo(() => {
+    if (currentWeather?.weather) {
+      const weatherMain = currentWeather?.weather[0].main.toUpperCase();
+      if (WEATHER_MAIN._GROUPS.CLEAR.includes(weatherMain)) {
+        return DespejadoBg.src;
+      }
+      if (WEATHER_MAIN._GROUPS.THUNDERSTORM.includes(weatherMain)) {
+        return TormentaBg.src;
+      }
+      if (WEATHER_MAIN._GROUPS.SNOW.includes(weatherMain)) {
+        return NieveBg.src;
+      }
+      if (
+        WEATHER_MAIN._GROUPS.CLOUDS.includes(weatherMain) ||
+        WEATHER_MAIN._GROUPS.ATMOSPHERE.includes(weatherMain)
+      ) {
+        return NubladoBg.src;
+      }
+      if (
+        WEATHER_MAIN._GROUPS.DRIZZLE.includes(weatherMain) ||
+        WEATHER_MAIN._GROUPS.RAIN.includes(weatherMain)
+      ) {
+        return LLuviaBg.src;
+      }
+    }
+    return DespejadoBg.src;
+  }, [currentWeather?.weather]);
+
+  const getNightOrDay = useMemo(() => {
+    if (currentWeather?.dt) {
+      const hour = parseTimestamp(currentWeather?.dt)
+        .split(' ')[1]
+        .replace(':', '');
+      return hour > '1800' || hour < '0600' ? 'NIGHT' : 'DAY';
+    }
+    return 'DAY';
+  }, [currentWeather?.dt]);
+
+  const weatherBgColor = SIDER_BG_COLORS.DESPEJADO[getNightOrDay];
 
   const fetchWeather = async () => {
     if (selectedLocation) {
@@ -81,7 +132,6 @@ export default function Home() {
         setCurrentWeather(data);
         lastLocation.current = selectedLocation;
         if (isInFavLocations(favLocations, data.name)) {
-          console.log('Ya estaba en los Fav, se actualiza');
           onAddFavLocation(data, false);
         }
       } else if (res.status === 404) {
@@ -97,10 +147,8 @@ export default function Home() {
   const fetchForecast = async () => {
     if (selectedLocation) {
       const res = await fetch(buildForecastApiUrl(selectedLocation));
-      console.log('res forecast: ', res);
       if (res.ok) {
-        const forecastData = await res.json();
-        console.log('Current Forecast: ', forecastData);
+        const forecastData: ForecastData = await res.json();
         setCurrentForecast(forecastData);
       }
     }
@@ -164,12 +212,9 @@ export default function Home() {
 
   useEffect(() => {
     setLocationsReloadKey(`${Date.now()}`);
-    setTimeout(() => {
+    fetchWeather().then(() => {
       setIsLoading(false);
-    }, 800);
-    // fetchWeather().then(() => {
-    //   setIsLoading(false);
-    // });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -191,7 +236,7 @@ export default function Home() {
               locations={sortByName(favLocations)}
               weatherBgColor={weatherBgColor}
               selectedLocation={selectedLocation}
-              onSelectLocation={onSelectLocation}
+              onSelectLocation={onSelectLocation} // ***
               onRemoveFav={onRemoveFavLocation}
             />
           </Col>
@@ -201,7 +246,7 @@ export default function Home() {
             onCloseDrawer={onCloseDrawer}
             weatherBgColor={weatherBgColor}
             selectedLocation={selectedLocation}
-            onSelectLocation={onSelectLocation}
+            onSelectLocation={onSelectLocation} // ***
             onRemoveFav={onRemoveFavLocation}
           />
 
@@ -212,7 +257,7 @@ export default function Home() {
             lg={18}
             xl={19}
             style={{
-              backgroundImage: `url(${despejadoBg.src})`,
+              backgroundImage: `url(${getBackgroundUrl})`,
               backgroundPosition: '50% 0',
               backgroundSize: 'cover',
             }}
@@ -224,7 +269,8 @@ export default function Home() {
             />
 
             <MainContent
-              data={currentWeather}
+              currentWeather={currentWeather}
+              currentForecast={currentForecast}
               onAddFav={onAddFavLocation}
               onRemoveFav={onRemoveFavLocation}
               isFavLocation={isInFavLocations(favLocations, selectedLocation)}
