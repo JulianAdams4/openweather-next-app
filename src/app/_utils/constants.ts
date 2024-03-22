@@ -13,7 +13,7 @@ export const API_WEATHER_BASE_URL =
 export const API_FORECAST_BASE_URL =
   'https://api.openweathermap.org/data/2.5/forecast';
 
-export const LIMIT_FORECAST_ITEMS_3H = 8; // 8 * 3h = 24h
+export const LIMIT_FORECAST_ITEMS_3H = 40; // 8 * 3h = 24h [8 = 1d / 40 = 5d]
 
 export const MIN_LENGTH_FOR_SEARCHING = 3;
 
