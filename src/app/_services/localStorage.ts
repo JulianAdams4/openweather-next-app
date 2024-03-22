@@ -2,16 +2,22 @@ import { LocalStorageAPI } from '@app/types';
 
 class LocalStorageService implements LocalStorageAPI {
   saveItem(key: string, value: any): void {
-    localStorage.setItem(key, JSON.stringify(value));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
   }
 
   getItem(key: string): any | null {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
+    if (typeof window !== 'undefined') {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    }
   }
 
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(key);
+    }
   }
 }
 

@@ -84,34 +84,6 @@ export default function Home() {
     [locationsReloadKey]
   );
 
-  const getBackgroundUrl = useMemo(() => {
-    if (currentWeather?.weather) {
-      const weatherMain = currentWeather?.weather[0].main.toUpperCase();
-      if (WEATHER_MAIN._GROUPS.CLEAR.includes(weatherMain)) {
-        return DespejadoBg.src;
-      }
-      if (WEATHER_MAIN._GROUPS.THUNDERSTORM.includes(weatherMain)) {
-        return TormentaBg.src;
-      }
-      if (WEATHER_MAIN._GROUPS.SNOW.includes(weatherMain)) {
-        return NieveBg.src;
-      }
-      if (
-        WEATHER_MAIN._GROUPS.CLOUDS.includes(weatherMain) ||
-        WEATHER_MAIN._GROUPS.ATMOSPHERE.includes(weatherMain)
-      ) {
-        return NubladoBg.src;
-      }
-      if (
-        WEATHER_MAIN._GROUPS.DRIZZLE.includes(weatherMain) ||
-        WEATHER_MAIN._GROUPS.RAIN.includes(weatherMain)
-      ) {
-        return LLuviaBg.src;
-      }
-    }
-    return DespejadoBg.src;
-  }, [currentWeather?.weather]);
-
   const getNightOrDay = useMemo(() => {
     if (currentWeather?.dt) {
       const hour = parseTimestamp(currentWeather?.dt)
@@ -122,7 +94,33 @@ export default function Home() {
     return 'DAY';
   }, [currentWeather?.dt]);
 
-  const weatherBgColor = SIDER_BG_COLORS.DESPEJADO[getNightOrDay];
+  const [getBackgroundUrl, weatherBgColor] = useMemo(() => {
+    if (currentWeather?.weather && getNightOrDay) {
+      const weatherMain = currentWeather?.weather[0].main.toUpperCase();
+      if (WEATHER_MAIN._GROUPS.CLEAR.includes(weatherMain)) {
+        return [DespejadoBg.src, SIDER_BG_COLORS.CLEAR[getNightOrDay]];
+      }
+      if (WEATHER_MAIN._GROUPS.THUNDERSTORM.includes(weatherMain)) {
+        return [TormentaBg.src, SIDER_BG_COLORS.RAIN[getNightOrDay]];
+      }
+      if (WEATHER_MAIN._GROUPS.SNOW.includes(weatherMain)) {
+        return [NieveBg.src, SIDER_BG_COLORS.SNOW[getNightOrDay]];
+      }
+      if (
+        WEATHER_MAIN._GROUPS.CLOUDS.includes(weatherMain) ||
+        WEATHER_MAIN._GROUPS.ATMOSPHERE.includes(weatherMain)
+      ) {
+        return [NubladoBg.src, SIDER_BG_COLORS.CLOUDS[getNightOrDay]];
+      }
+      if (
+        WEATHER_MAIN._GROUPS.DRIZZLE.includes(weatherMain) ||
+        WEATHER_MAIN._GROUPS.RAIN.includes(weatherMain)
+      ) {
+        return [LLuviaBg.src, SIDER_BG_COLORS.RAIN[getNightOrDay]];
+      }
+    }
+    return [DespejadoBg.src, SIDER_BG_COLORS.CLEAR[getNightOrDay]];
+  }, [currentWeather?.weather, getNightOrDay]);
 
   const fetchWeather = async () => {
     if (selectedLocation) {
@@ -236,7 +234,7 @@ export default function Home() {
               locations={sortByName(favLocations)}
               weatherBgColor={weatherBgColor}
               selectedLocation={selectedLocation}
-              onSelectLocation={onSelectLocation} // ***
+              onSelectLocation={onSelectLocation}
               onRemoveFav={onRemoveFavLocation}
             />
           </Col>

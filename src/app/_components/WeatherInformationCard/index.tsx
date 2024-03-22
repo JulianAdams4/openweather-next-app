@@ -40,11 +40,11 @@ const WeatherInformationCard = ({
           display: 'flex',
           justifyContent: 'center',
           lineHeight: 1,
-          marginLeft: '3rem',
+          marginLeft: '2rem',
         }}
       >
         {currentWeather.name} &nbsp;
-        <span style={{ fontSize: '1.3rem' }}>{currentWeather.sys.country}</span>
+        <span style={{ fontSize: '1.1rem' }}>{currentWeather.sys.country}</span>
         &nbsp;
         {isFavLocation ? (
           <RemoveFavItemButton
@@ -63,7 +63,7 @@ const WeatherInformationCard = ({
           margin: 0,
           color: '#ffffff',
           fontWeight: 'normal',
-          fontSize: '3.3rem',
+          fontSize: '3rem',
         }}
       >
         {roundTemperature(currentWeather.main.temp)}

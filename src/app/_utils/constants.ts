@@ -31,19 +31,19 @@ export const MONTHS: string[] = [
 ];
 
 export const SIDER_BG_COLORS = {
-  DESPEJADO: {
+  CLEAR: {
     DAY: '#4985AA',
     NIGHT: '#181C2E',
   },
-  MAYORMENTE_NUBLADO: {
+  CLOUDS: {
     DAY: '#377CA6',
     NIGHT: '#181C21',
   },
-  MUY_NUBOSO: {
+  SNOW: {
     DAY: '#5B6D7D',
     NIGHT: '#272B2D',
   },
-  LLUVIAS: {
+  RAIN: {
     DAY: '#5D7C8B',
     NIGHT: '#15161E',
   },
