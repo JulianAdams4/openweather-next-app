@@ -1,114 +1,237 @@
-// import Image from 'next/image'
+'use client';
+
+import React, {
+  createContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Col, Layout, notification, Row } from 'antd';
+import despejadoBg from '@assets/despejado.jpeg';
+import LocalStorageService from '@app/_services/localStorage';
+import { FavLocation, NotificationType, WeatherData } from '@project/next-env';
+
+import SiderPage from './_components/Sider';
+import SplashScreen from './_components/SplashScreen';
+import Header from './_components/Header';
+import ResponsiveDrawer from './_components/ResponsiveDrawer';
+import {
+  FAV_LOCATIONS_STORAGE_KEY,
+  MY_LOCATION,
+  SIDER_BG_COLORS,
+} from './_utils/constants';
+import MainContent from './_components/Main';
+import {
+  buildForecastApiUrl,
+  buildWeatherApiUrl,
+  capitalizeFirstLetter,
+  isInFavLocations,
+  sortByName,
+} from './_utils/text';
+
+const Context = createContext({ name: 'Notifications' });
 
 export default function Home() {
-  return <div>My Page</div>;
-  // return (
-  //   <main className="flex min-h-screen flex-col items-center justify-between p-24">
-  //     <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-  //       <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-  //         Get started by editing&nbsp;
-  //         <code className="font-mono font-bold">src/app/page.tsx</code>
-  //       </p>
-  //       <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-  //         <a
-  //           className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-  //           href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-  //           target="_blank"
-  //           rel="noopener noreferrer"
-  //         >
-  //           By{' '}
-  //           <Image
-  //             src="/vercel.svg"
-  //             alt="Vercel Logo"
-  //             className="dark:invert"
-  //             width={100}
-  //             height={24}
-  //             priority
-  //           />
-  //         </a>
-  //       </div>
-  //     </div>
+  const lastLocation = useRef('');
 
-  //     <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-  //       <Image
-  //         className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-  //         src="/next.svg"
-  //         alt="Next.js Logo"
-  //         width={180}
-  //         height={37}
-  //         priority
-  //       />
-  //     </div>
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [selectedLocation, setSelectedLocation] = useState<string>(MY_LOCATION);
+  const [currentWeather, setCurrentWeather] = useState<WeatherData | undefined>(
+    undefined
+  );
+  const [currentForecast, setCurrentForecast] = useState(null);
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [locationsReloadKey, setLocationsReloadKey] = useState<string>('');
 
-  //     <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-  //       <a
-  //         href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-  //         className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <h2 className={`mb-3 text-2xl font-semibold`}>
-  //           Docs{' '}
-  //           <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-  //             -&gt;
-  //           </span>
-  //         </h2>
-  //         <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-  //           Find in-depth information about Next.js features and API.
-  //         </p>
-  //       </a>
+  const localStorage = new LocalStorageService();
 
-  //       <a
-  //         href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-  //         className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <h2 className={`mb-3 text-2xl font-semibold`}>
-  //           Learn{' '}
-  //           <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-  //             -&gt;
-  //           </span>
-  //         </h2>
-  //         <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-  //           Learn about Next.js in an interactive course with&nbsp;quizzes!
-  //         </p>
-  //       </a>
+  const notificationsContextValue = useMemo(() => ({ name: 'Ant Design' }), []);
+  const [api, contextHolder] = notification.useNotification();
 
-  //       <a
-  //         href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-  //         className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <h2 className={`mb-3 text-2xl font-semibold`}>
-  //           Templates{' '}
-  //           <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-  //             -&gt;
-  //           </span>
-  //         </h2>
-  //         <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-  //           Explore the Next.js 13 playground.
-  //         </p>
-  //       </a>
+  const sendNotification = (
+    type: NotificationType = 'info',
+    message: string = 'Información',
+    description: string = 'Algo salió mal'
+  ) => {
+    api[type]({
+      message,
+      description: (
+        <Context.Consumer>{({ name }) => `${description}`}</Context.Consumer>
+      ),
+      placement: 'topRight',
+    });
+  };
 
-  //       <a
-  //         href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-  //         className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <h2 className={`mb-3 text-2xl font-semibold`}>
-  //           Deploy{' '}
-  //           <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-  //             -&gt;
-  //           </span>
-  //         </h2>
-  //         <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-  //           Instantly deploy your Next.js site to a shareable URL with Vercel.
-  //         </p>
-  //       </a>
-  //     </div>
-  //   </main>
-  // )
+  const favLocations = useMemo(
+    () => localStorage.getItem(FAV_LOCATIONS_STORAGE_KEY) || [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [locationsReloadKey]
+  );
+  useEffect(() => console.log('Se recargan los Favs'), [locationsReloadKey]);
+
+  const weatherBgColor = SIDER_BG_COLORS.DESPEJADO.DAY;
+
+  const fetchWeather = async () => {
+    if (selectedLocation) {
+      const res = await fetch(buildWeatherApiUrl(selectedLocation));
+      if (res.ok) {
+        const data: WeatherData = await res.json();
+        setCurrentWeather(data);
+        lastLocation.current = selectedLocation;
+        if (isInFavLocations(favLocations, data.name)) {
+          console.log('Ya estaba en los Fav, se actualiza');
+          onAddFavLocation(data, false);
+        }
+      } else if (res.status === 404) {
+        sendNotification('error', 'Error', 'Ciudad no encontrada');
+        setSelectedLocation(lastLocation.current);
+      }
+    } else {
+      sendNotification('error', 'Error', 'Debe ingresar una ciudad');
+      setSelectedLocation(lastLocation.current);
+    }
+  };
+
+  const fetchForecast = async () => {
+    if (selectedLocation) {
+      const res = await fetch(buildForecastApiUrl(selectedLocation));
+      console.log('res forecast: ', res);
+      if (res.ok) {
+        const forecastData = await res.json();
+        console.log('Current Forecast: ', forecastData);
+        setCurrentForecast(forecastData);
+      }
+    }
+  };
+
+  const onOpenDrawer = () => {
+    setOpenDrawer(true);
+  };
+
+  const onCloseDrawer = () => {
+    setOpenDrawer(false);
+  };
+
+  const onSelectLocation = (favLocation: string) => {
+    setSelectedLocation(favLocation);
+  };
+
+  const onAddFavLocation = (
+    locationData: WeatherData,
+    showMessage: boolean = true
+  ) => {
+    const updatedFavLocations = [
+      ...favLocations.filter(
+        (loc: FavLocation) => loc.name !== locationData.name
+      ),
+      {
+        name: locationData.name,
+        temp: locationData.main.temp,
+        temp_min: locationData.main.temp_min,
+        temp_max: locationData.main.temp_max,
+        weather: capitalizeFirstLetter(locationData.weather[0].description),
+        time: locationData.dt,
+      },
+    ];
+    localStorage.saveItem(FAV_LOCATIONS_STORAGE_KEY, updatedFavLocations);
+    setLocationsReloadKey(`${Date.now()}`);
+    if (showMessage) {
+      sendNotification('success', 'Éxito', 'Se agregó a Favoritos');
+    }
+  };
+
+  const onRemoveFavLocation = (cityName: string) => {
+    const updatedFavLocations = favLocations.filter(
+      (location: FavLocation) => location.name !== cityName
+    );
+    localStorage.saveItem(FAV_LOCATIONS_STORAGE_KEY, updatedFavLocations);
+    sendNotification('success', 'Éxito', 'Se eliminó de Favoritos');
+    setLocationsReloadKey(`${Date.now()}`);
+  };
+
+  useEffect(() => {
+    if (selectedLocation && selectedLocation.length > 3) {
+      setIsSearching(true);
+      fetchWeather().then(() => {
+        setIsSearching(false);
+        fetchForecast();
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    setLocationsReloadKey(`${Date.now()}`);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    // fetchWeather().then(() => {
+    //   setIsLoading(false);
+    // });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Context.Provider value={notificationsContextValue}>
+      {isLoading && <SplashScreen />}
+
+      {contextHolder}
+
+      <Layout
+        style={{
+          width: '100%',
+          minHeight: '100vh',
+        }}
+      >
+        <Row style={{ flex: 1 }}>
+          <Col xs={0} sm={10} md={8} lg={6} xl={5}>
+            <SiderPage
+              locations={sortByName(favLocations)}
+              weatherBgColor={weatherBgColor}
+              selectedLocation={selectedLocation}
+              onSelectLocation={onSelectLocation}
+              onRemoveFav={onRemoveFavLocation}
+            />
+          </Col>
+          <ResponsiveDrawer
+            openDrawer={openDrawer}
+            locations={sortByName(favLocations)}
+            onCloseDrawer={onCloseDrawer}
+            weatherBgColor={weatherBgColor}
+            selectedLocation={selectedLocation}
+            onSelectLocation={onSelectLocation}
+            onRemoveFav={onRemoveFavLocation}
+          />
+
+          <Col
+            xs={24}
+            sm={14}
+            md={16}
+            lg={18}
+            xl={19}
+            style={{
+              backgroundImage: `url(${despejadoBg.src})`,
+              backgroundPosition: '50% 0',
+              backgroundSize: 'cover',
+            }}
+          >
+            <Header
+              loading={isSearching}
+              onOpenDrawer={onOpenDrawer}
+              setLocation={setSelectedLocation}
+            />
+
+            <MainContent
+              data={currentWeather}
+              onAddFav={onAddFavLocation}
+              onRemoveFav={onRemoveFavLocation}
+              isFavLocation={isInFavLocations(favLocations, selectedLocation)}
+            />
+          </Col>
+        </Row>
+      </Layout>
+    </Context.Provider>
+  );
 }

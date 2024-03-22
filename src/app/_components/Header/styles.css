@@ -1,0 +1,13 @@
+.search-input-input::placeholder {
+  color: #ffffff;
+  opacity: 0.4;
+}
+.search-input-input::-ms-input-placeholder {
+  color: #ffffff;
+  opacity: 0.4;
+}
+
+.search-input-count {
+  color: #ffffff !important;
+  opacity: 0.4;
+}

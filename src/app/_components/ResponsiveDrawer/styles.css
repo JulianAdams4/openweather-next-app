@@ -1,0 +1,22 @@
+.ant-drawer-content .ant-drawer-header {
+  padding: 20px 1em 0px;
+  border-bottom: none;
+}
+
+.ant-drawer-content .ant-drawer-header .ant-drawer-header-title {
+  justify-content: flex-end;
+}
+
+.ant-drawer-content .ant-drawer-header .ant-drawer-header-title button {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 2rem;
+}
+
+.ant-drawer-content .ant-drawer-body {
+  padding: 0;
+}
+
+.ant-drawer-content-wrapper {
+  box-shadow: none !important;
+}
